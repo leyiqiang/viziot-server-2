@@ -12,8 +12,8 @@ const defaultConfig = {
  * @type {{prod: {}, dev: {}, test: {apiPort: number}}}
  */
 const envConfig = {
-  prod: {},
-  dev: {},
+  production: {},
+  development: {},
   test: {
     apiPort: 3100,
   },
@@ -24,7 +24,7 @@ const envConfig = {
  * @returns {*}
  */
 function loadConfig() {
-  const env = process.env.NODE_ENV || 'dev'
+  const env = process.env.NODE_ENV || 'development'
 
   if (!envConfig[env]) {
     throw new Error(
