@@ -8,6 +8,8 @@ const TcpDataSchema = new mongoose.Schema({
   dst_port: String,
   src_port: String,
   timestamp: { type: Number, required: true },
+}, {
+  autoIndex: false,
 })
 
 TcpDataSchema.index({
@@ -16,6 +18,8 @@ TcpDataSchema.index({
 
 const TcpDataString = 'TcpData'
 const TcpDataModel = mongoose.model(TcpDataString, TcpDataSchema)
+
+TcpDataModel.createIndexes()
 
 module.exports = {
   TcpDataSchema,

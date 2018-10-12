@@ -15,10 +15,6 @@ const TodoSchema = new mongoose.Schema({
   },
 })
 
-TodoSchema.index({
-  created: -1,
-})
-
 
 const TodoString = 'Todo'
 const TodoModel = mongoose.model(TodoString, TodoSchema)
