@@ -3,7 +3,7 @@
  * @type {{db: string, apiPort: number}}
  */
 const defaultConfig = {
-  apiPort: 3000,
+  apiPort: process.env.PORT || 3000,
   db: process.env['MONGO_URI'],
 }
 
