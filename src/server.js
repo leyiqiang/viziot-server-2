@@ -10,6 +10,7 @@ class Server {
   constructor() {
     this.app = express()
     this.config = config
+    this.http = require('http').Server(this.app)
 
     this.init()
   }
@@ -28,9 +29,11 @@ class Server {
 
         // initialize api
         routesConfig(this.app)
+        const { initSocketIO } = require('./socketio')
+        initSocketIO(this.http)
 
         // start server
-        this.app.listen(this.config.apiPort, () => {
+        this.http.listen(this.config.apiPort, () => {
           console.log(`[Server] listening on port ${this.config.apiPort}`)
         })
       })
