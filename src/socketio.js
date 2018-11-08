@@ -40,9 +40,14 @@ function initSocketIO(http) {
 
   const interval = 200
   setInterval(async () => {
-    console.log('emitting to chat message')
     const result = await TcpDataDa.getRecentDataWithinNSeconds(interval)
     chat.emit('/chat/message', result);
+  }, interval)
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getTotalCountFromStartOfTheDay()
+    console.log(result)
+    chat.emit('/total/count', result);
   }, interval)
 
 // const news = io
