@@ -26,6 +26,12 @@ function initSocketIO(http) {
 
       // console.log(data)
     })
+    socket.on('/total/count', function(data) {
+      // chat.emit('/chat/message', data)
+      // socket.broadcast.emit('/chat/message', data);
+
+      // console.log(data)
+    })
     //
     // socket.emit('a message', {
     //   that: 'only',

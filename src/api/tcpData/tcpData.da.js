@@ -20,7 +20,16 @@ async function getTotalCountFromStartOfTheDay() {
   let startMS = getStartOfToday()
   let endMS = getNow()
 
-  return getAggregateCountDataByTime(startMS, endMS)
+  const result = await getAggregateCountDataByTime(startMS, endMS)
+  if (result.length > 0) {
+    return {
+      count: result[0].count
+    }
+  } else {
+    return {
+      count: 0
+    }
+  }
 
 }
 
