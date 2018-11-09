@@ -17,6 +17,19 @@ async function getRecentDataWithinNSeconds(pastMS) {
   return getAggregateDataByTime(startMS, endMS)
 }
 
+function processResult(result, startMS, endMS) {
+  const res = {}
+  if (result.length > 0) {
+    res['count'] = result[0].count
+  } else {
+    res['count'] = 0
+  }
+
+  res['startMS'] = startMS
+  res['endMS'] = endMS
+  return result
+}
+
 async function getTotalCountOfRecentDataWithinNSeconds(pastMS) {
   if (_.isNil(pastMS)) {
     throw Error('n is undefined')
@@ -24,32 +37,16 @@ async function getTotalCountOfRecentDataWithinNSeconds(pastMS) {
   const endMS = Date.now()
   const startMS = endMS - pastMS
   const result = await getAggregateCountDataByTime(startMS, endMS)
-  if (result.length > 0) {
-    return {
-      count: result[0].count
-    }
-  } else {
-    return {
-      count: 0
-    }
-  }
+  return processResult(result)
 }
 
 async function getTotalCountFromStartOfTheDay() {
-  let startMS = getStartOfToday()
-  let endMS = getNow()
+  const startMS = getStartOfToday()
+  const endMS = getNow()
 
   const result = await getAggregateCountDataByTime(startMS, endMS)
-  if (result.length > 0) {
-    return {
-      count: result[0].count
-    }
-  } else {
-    return {
-      count: 0
-    }
-  }
 
+  return processResult(result)
 }
 
 async function getAggregateCountDataByTime(startMS, endMS) {
