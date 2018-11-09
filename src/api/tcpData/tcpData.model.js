@@ -13,7 +13,7 @@ const TcpDataSchema = new mongoose.Schema({
 })
 
 TcpDataSchema.index({
-  time_stamp: -1,
+  timestamp: -1,
 })
 
 const TcpDataString = 'TcpData'
