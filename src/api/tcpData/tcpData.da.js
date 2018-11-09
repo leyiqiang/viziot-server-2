@@ -5,6 +5,7 @@ const { getStartOfToday, getNow } = require('../../util/time')
 module.exports = {
   getRecentDataWithinNSeconds,
   getTotalCountFromStartOfTheDay,
+  getTotalCountOfRecentDataWithinNSeconds,
 }
 
 async function getRecentDataWithinNSeconds(pastMS) {
@@ -14,6 +15,24 @@ async function getRecentDataWithinNSeconds(pastMS) {
   const endMS = Date.now()
   const startMS = endMS - pastMS
   return getAggregateDataByTime(startMS, endMS)
+}
+
+async function getTotalCountOfRecentDataWithinNSeconds(pastMS) {
+  if (_.isNil(pastMS)) {
+    throw Error('n is undefined')
+  }
+  const endMS = Date.now()
+  const startMS = endMS - pastMS
+  const result = await getAggregateCountDataByTime(startMS, endMS)
+  if (result.length > 0) {
+    return {
+      count: result[0].count
+    }
+  } else {
+    return {
+      count: 0
+    }
+  }
 }
 
 async function getTotalCountFromStartOfTheDay() {

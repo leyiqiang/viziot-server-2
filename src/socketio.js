@@ -32,6 +32,13 @@ function initSocketIO(http) {
 
       // console.log(data)
     })
+    socket.on('/total/count/500ms', function(data) {
+      // chat.emit('/chat/message', data)
+      // socket.broadcast.emit('/chat/message', data);
+
+      // console.log(data)
+    })
+
     //
     // socket.emit('a message', {
     //   that: 'only',
@@ -55,6 +62,12 @@ function initSocketIO(http) {
     console.log(result)
     chat.emit('/total/count', result);
   }, interval)
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getTotalCountOfRecentDataWithinNSeconds(500)
+    console.log(result)
+    chat.emit('/total/count/500ms', result);
+  }, 500)
 
 // const news = io
 //   .of('/news')
