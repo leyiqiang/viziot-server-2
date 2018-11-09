@@ -27,7 +27,7 @@ function processResult(result, startMS, endMS) {
 
   res['startMS'] = startMS
   res['endMS'] = endMS
-  return result
+  return res
 }
 
 async function getTotalCountOfRecentDataWithinNSeconds(pastMS) {
@@ -37,7 +37,7 @@ async function getTotalCountOfRecentDataWithinNSeconds(pastMS) {
   const endMS = Date.now()
   const startMS = endMS - pastMS
   const result = await getAggregateCountDataByTime(startMS, endMS)
-  return processResult(result)
+  return processResult(result, startMS, endMS)
 }
 
 async function getTotalCountFromStartOfTheDay() {
@@ -46,7 +46,7 @@ async function getTotalCountFromStartOfTheDay() {
 
   const result = await getAggregateCountDataByTime(startMS, endMS)
 
-  return processResult(result)
+  return processResult(result, startMS, endMS)
 }
 
 async function getAggregateCountDataByTime(startMS, endMS) {
