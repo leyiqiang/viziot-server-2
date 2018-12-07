@@ -1,6 +1,7 @@
 
 const todoApi = require('../api/todo/index')
 const tcpDataApi = require('../api/tcpData/index')
+const deviceApi = require('../api/device/index')
 
 const API_V1 = '/api/v1'
 
@@ -11,4 +12,5 @@ module.exports = app => {
 
   app.use(API_V1, todoApi)
   app.use(API_V1, tcpDataApi)
+  app.use(API_V1, deviceApi)
 }
