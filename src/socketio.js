@@ -75,6 +75,12 @@ function initSocketIO(http) {
     chat.emit('/total/size/1s', result);
   }, interval)
 
+ setInterval(async () => {
+    const result = await TcpDataDa.getTotalSizeFromStartOfTheDay(interval)
+    console.log(result)
+    chat.emit('/total/size', result);
+  }, interval)
+
 // const news = io
 //   .of('/news')
 //   .on('connection', function (socket) {

@@ -6,8 +6,10 @@ const { getStartOfToday, getNow } = require('../../util/time')
 module.exports = {
   getRecentDataWithinNSeconds,
   getTotalCountFromStartOfTheDay,
+  getTotalSizeFromStartOfTheDay,
   getTotalCountOfRecentDataWithinNSeconds,
   getTotalSizeOfRecentDataWithinNSeconds,
+
 }
 
 async function getRecentDataWithinNSeconds(pastMS) {
@@ -55,6 +57,20 @@ async function getTotalCountFromStartOfTheDay() {
 
   return {
     count,
+    startMS,
+    endMS,
+  }
+}
+
+
+async function getTotalSizeFromStartOfTheDay() {
+  const startMS = getStartOfToday()
+  const endMS = getNow()
+
+  const size = await getAggregateSizeDataByTime(startMS, endMS)
+
+  return {
+    size,
     startMS,
     endMS,
   }
