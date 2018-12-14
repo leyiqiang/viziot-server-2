@@ -65,7 +65,7 @@ async function getAggregateCountDataByTime(startMS, endMS) {
         endMS: { $lte: endMS}
       },
     },
-    { $group: { _id: null, count: { $sum: 1 } } },
+    { $group: { _id: null, count: { $sum: '$packetCount' } } },
   ])
 
   let count = 0
