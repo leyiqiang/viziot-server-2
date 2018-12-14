@@ -51,11 +51,11 @@ function initSocketIO(http) {
   });
 
 
-  const interval = 200
-  setInterval(async () => {
-    const result = await TcpDataDa.getRecentDataWithinNSeconds(interval)
-    chat.emit('/chat/message', result);
-  }, interval)
+  const interval = 1000
+  // setInterval(async () => {
+  //   const result = await TcpDataDa.getRecentDataWithinNSeconds(interval)
+  //   chat.emit('/chat/message', result);
+  // }, interval)
 
   setInterval(async () => {
     const result = await TcpDataDa.getTotalCountFromStartOfTheDay()
@@ -64,10 +64,16 @@ function initSocketIO(http) {
   }, interval)
 
   setInterval(async () => {
-    const result = await TcpDataDa.getTotalCountOfRecentDataWithinNSeconds(500)
+    const result = await TcpDataDa.getTotalCountOfRecentDataWithinNSeconds(interval)
     console.log(result)
-    chat.emit('/total/count/500ms', result);
-  }, 500)
+    chat.emit('/total/count/1s', result);
+  }, interval)
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getTotalSizeOfRecentDataWithinNSeconds(interval)
+    console.log(result)
+    chat.emit('/total/size/1s', result);
+  }, interval)
 
 // const news = io
 //   .of('/news')
