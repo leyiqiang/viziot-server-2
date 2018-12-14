@@ -1,6 +1,7 @@
 const _ = require('lodash')
 
 const { TcpDataModel } = require('./tcpData.model')
+const { TcpAggregatedDataModel } = require('./tcpAggregatedData.model')
 const { getStartOfToday, getNow } = require('../../util/time')
 module.exports = {
   getRecentDataWithinNSeconds,
@@ -17,16 +18,12 @@ async function getRecentDataWithinNSeconds(pastMS) {
   return getAggregateDataByTime(startMS, endMS)
 }
 
-function processResult(result, startMS, endMS) {
-  const res = {}
-  if (result.length > 0) {
-    res['count'] = result[0].count
-  } else {
-    res['count'] = 0
+function processResult(count, startMS, endMS) {
+  const res = {
+    count,
+    startMS,
+    endMS
   }
-
-  res['startMS'] = startMS
-  res['endMS'] = endMS
   return res
 }
 
@@ -51,14 +48,40 @@ async function getTotalCountFromStartOfTheDay() {
 
 async function getAggregateCountDataByTime(startMS, endMS) {
 
-  return TcpDataModel.aggregate([
+  const resultsFromTcpData = await TcpDataModel.aggregate([
     {
       $match: {
         timestamp: { $gte: startMS, $lte: endMS },
       },
     },
-    { $group: { _id: null, count: { $sum: 1 } } }
+    { $group: { _id: null, count: { $sum: 1 } } },
   ])
+  console.log(resultsFromTcpData)
+
+  const resultsFromAggregatedData = await TcpAggregatedDataModel.aggregate([
+    {
+      $match: {
+        startMS: { $gte: startMS },
+        endMS: { $lte: endMS}
+      },
+    },
+    { $group: { _id: null, count: { $sum: 1 } } },
+  ])
+
+  let count = 0
+
+  if (resultsFromTcpData.length > 0) {
+    // console.log('resultsFromTcpData: ' + resultsFromTcpData[0].count)
+    count += resultsFromTcpData[0].count
+  }
+
+  if (resultsFromAggregatedData.length > 0) {
+    // console.log('resultsFromAggregatedData: ' + resultsFromAggregatedData[0].count)
+
+    count += resultsFromAggregatedData[0].count
+  }
+
+  return count
 }
 
 async function getAggregateDataByTime(startMS, endMS) {

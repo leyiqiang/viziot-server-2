@@ -7,6 +7,7 @@ const TcpDataSchema = new mongoose.Schema({
   src_mac: String,
   dst_port: String,
   src_port: String,
+  packet_size: String,
   timestamp: { type: Number, required: true },
 }, {
   autoIndex: false,
