@@ -96,6 +96,20 @@ function initSocketIO(http) {
     chat.emit('/total/count/10min', result);
   }, interval)
 
+  const oneMinute = 1 * 60 * 1000
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getTotalSizeOfRecentDataWithinNSeconds(oneMinute)
+    // console.log(result)
+    chat.emit('/total/size/1min', result);
+  }, interval)
+
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getTotalCountOfRecentDataWithinNSeconds(oneMinute)
+    // console.log(result)
+    chat.emit('/total/count/1min', result);
+  }, interval)
 
 // const news = io
 //   .of('/news')
