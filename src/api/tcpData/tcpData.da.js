@@ -1,15 +1,73 @@
 const _ = require('lodash')
-
+const { standardize } = require('mac-address-util')
 const { TcpDataModel } = require('./tcpData.model')
 const { TcpAggregatedDataModel } = require('./tcpAggregatedData.model')
+const { DeviceModel } = require('../device/device.model')
 const { getStartOfToday, getNow } = require('../../util/time')
+
 module.exports = {
   getRecentDataWithinNSeconds,
   getTotalCountFromStartOfTheDay,
   getTotalSizeFromStartOfTheDay,
   getTotalCountOfRecentDataWithinNSeconds,
   getTotalSizeOfRecentDataWithinNSeconds,
+  getAggregateMacAddressSizeDataByTime,
+  getAggregateMacAddressSizeDataWithinNSeconds,
+}
 
+function buildSizeMacAddressData(macPacketList) {
+  const macSizeMap = {}
+
+  macPacketList.forEach((macPacket) => {
+    const { size, _id } = macPacket
+
+    const { src_mac, dst_mac } = _id
+
+    if (!_.isNil(src_mac)) {
+      if (src_mac in macSizeMap) {
+        macSizeMap[src_mac] += size
+      } else {
+        macSizeMap[src_mac] = size
+      }
+    }
+
+    if (!_.isNil(dst_mac)) {
+      if (dst_mac in macSizeMap) {
+        macSizeMap[dst_mac] += size
+      } else {
+        macSizeMap[dst_mac] = size
+      }
+    }
+
+  })
+  return macSizeMap
+}
+
+function convertDeviceListToMap(devices) {
+  const deviceMap = {}
+  _.forEach(devices, (device) => {
+    const standardizedMacAddress = standardize(device['macAddress'])
+    deviceMap[standardizedMacAddress] = device['name']
+  })
+  return deviceMap
+}
+
+function mapMacAddressToDeviceName(macSizeMap, deviceMap) {
+  const results = []
+  _.forEach(macSizeMap, function(size, mac) {
+    const standardizedMacAddress = standardize(mac)
+
+    const data = {
+      size,
+      macAddress: standardizedMacAddress,
+    }
+    data['name'] = ''
+    if(standardizedMacAddress in deviceMap) {
+      data['name'] = deviceMap[standardizedMacAddress]
+    }
+    results.push(data)
+  })
+  return results
 }
 
 async function getRecentDataWithinNSeconds(pastMS) {
@@ -20,6 +78,21 @@ async function getRecentDataWithinNSeconds(pastMS) {
   const startMS = endMS - pastMS
   return getAggregateDataByTime(startMS, endMS)
 }
+
+async function getAggregateMacAddressSizeDataWithinNSeconds(pastMS) {
+  if (_.isNil(pastMS)) {
+    throw Error('n is undefined')
+  }
+  const endMS = Date.now()
+  const startMS = endMS - pastMS
+  const size = await getAggregateMacAddressSizeDataByTime(startMS, endMS)
+  return {
+    size,
+    startMS,
+    endMS,
+  }
+}
+
 
 async function getTotalSizeOfRecentDataWithinNSeconds(pastMS) {
   if (_.isNil(pastMS)) {
@@ -150,6 +223,45 @@ async function getAggregateSizeDataByTime(startMS, endMS) {
 }
 
 
+
+async function getAggregateMacAddressSizeDataByTime(startMS, endMS) {
+  const tcpDataPromise = TcpDataModel.aggregate([
+    {
+      $match: {
+        timestamp: { $gte: startMS, $lte: endMS },
+      },
+    },
+    { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$packet_size' } } },
+  ])
+
+  const aggregateDataPromise = TcpAggregatedDataModel.aggregate([
+    {
+      $match: {
+        startMS: { $gte: startMS },
+        endMS: { $lte: endMS}
+      },
+    },
+    { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$totalPacketSize' } } },
+  ])
+
+  const devicesDataPromise = DeviceModel.find()
+  // parallel promises
+  const values = await Promise.all([tcpDataPromise, aggregateDataPromise, devicesDataPromise])
+
+  const resultsFromTcpData = values[0]
+  const resultsFromAggregatedData = values[1]
+  const devices = values[2]
+  const deviceMap = convertDeviceListToMap(devices)
+
+  const combinedArray = resultsFromTcpData.concat(resultsFromAggregatedData)
+  const resultMap = buildSizeMacAddressData(combinedArray)
+  const results = mapMacAddressToDeviceName(resultMap, deviceMap)
+
+  console.log(results)
+  return results
+}
+
+// getAggregateMacAddressSizeDataByTime(Date.now() - 1000000, Date.now())
 
 async function getAggregateDataByTime(startMS, endMS) {
   return TcpDataModel.find({

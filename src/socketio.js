@@ -70,15 +70,21 @@ function initSocketIO(http) {
   }, interval)
 
   setInterval(async () => {
-    const result = await TcpDataDa.getTotalSizeOfRecentDataWithinNSeconds(interval)
+    const result = await TcpDataDa.getAggregateMacAddressSizeDataByTime(interval)
     // console.log(result)
-    chat.emit('/total/size/1s', result);
+    chat.emit('/total/count/1min', result);
   }, interval)
 
  setInterval(async () => {
     const result = await TcpDataDa.getTotalSizeFromStartOfTheDay(interval)
     // console.log(result)
     chat.emit('/total/size', result);
+  }, interval)
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getAggregateMacAddressSizeDataWithinNSeconds(interval)
+    // console.log(result)
+    chat.emit('/individual/size/1s', result);
   }, interval)
 
   const tenMinutes = 10 * 60 * 1000
@@ -110,6 +116,7 @@ function initSocketIO(http) {
     // console.log(result)
     chat.emit('/total/count/1min', result);
   }, interval)
+
 
 // const news = io
 //   .of('/news')
