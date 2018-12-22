@@ -257,7 +257,6 @@ async function getAggregateMacAddressSizeDataByTime(startMS, endMS) {
   const resultMap = buildSizeMacAddressData(combinedArray)
   const results = mapMacAddressToDeviceName(resultMap, deviceMap)
 
-  console.log(results)
   return results
 }
 

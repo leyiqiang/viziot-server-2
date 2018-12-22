@@ -69,17 +69,19 @@ function initSocketIO(http) {
     chat.emit('/total/count/1s', result);
   }, interval)
 
-  setInterval(async () => {
-    const result = await TcpDataDa.getAggregateMacAddressSizeDataByTime(interval)
-    // console.log(result)
-    chat.emit('/total/count/1min', result);
-  }, interval)
-
  setInterval(async () => {
     const result = await TcpDataDa.getTotalSizeFromStartOfTheDay(interval)
     // console.log(result)
     chat.emit('/total/size', result);
   }, interval)
+
+
+  setInterval(async () => {
+    const result = await TcpDataDa.getTotalSizeOfRecentDataWithinNSeconds(interval)
+    // console.log(result)
+    chat.emit('/total/size/1s', result);
+  }, interval)
+
 
   setInterval(async () => {
     const result = await TcpDataDa.getAggregateMacAddressSizeDataWithinNSeconds(interval)
