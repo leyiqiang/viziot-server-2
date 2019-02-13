@@ -89,6 +89,12 @@ function initSocketIO(http) {
     chat.emit('/individual/size/1s', result);
   }, interval)
 
+  setInterval(async () => {
+    const result = await TcpDataDa.getAggregateMacAddressSizeDataFromStartOfTheDay()
+    // console.log(result)
+    chat.emit('/individual/size', result);
+  }, interval)
+
   const tenMinutes = 10 * 60 * 1000
 
   setInterval(async () => {

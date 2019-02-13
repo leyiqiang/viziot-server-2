@@ -13,6 +13,7 @@ module.exports = {
   getTotalSizeOfRecentDataWithinNSeconds,
   getAggregateMacAddressSizeDataByTime,
   getAggregateMacAddressSizeDataWithinNSeconds,
+  getAggregateMacAddressSizeDataFromStartOfTheDay,
 }
 
 function buildSizeMacAddressData(macPacketList) {
@@ -107,6 +108,19 @@ async function getTotalSizeOfRecentDataWithinNSeconds(pastMS) {
     endMS,
   }
 }
+
+
+async function getAggregateMacAddressSizeDataFromStartOfTheDay() {
+  const endMS = Date.now()
+  const startMS = getStartOfToday()
+  const size = await getAggregateMacAddressSizeDataByTime(startMS, endMS)
+  return {
+    size,
+    startMS,
+    endMS,
+  }
+}
+
 
 async function getTotalCountOfRecentDataWithinNSeconds(pastMS) {
   if (_.isNil(pastMS)) {
