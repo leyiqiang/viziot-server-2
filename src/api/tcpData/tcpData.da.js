@@ -178,7 +178,7 @@ async function getAggregateCountDataByTime(startMS, endMS) {
     {
       $match: {
         startMS: { $gte: startMS },
-        endMS: { $lte: endMS}
+        endMS: { $lte: endMS},
       },
     },
     { $group: { _id: null, count: { $sum: '$packetCount' } } },
@@ -215,7 +215,7 @@ async function getAggregateSizeDataByTime(startMS, endMS) {
     {
       $match: {
         startMS: { $gte: startMS },
-        endMS: { $lte: endMS}
+        endMS: { $lte: endMS},
       },
     },
     { $group: { _id: null, size: { $sum: '$totalPacketSize' } } },
@@ -252,7 +252,7 @@ async function getAggregateMacAddressSizeDataByTime(startMS, endMS) {
     {
       $match: {
         startMS: { $gte: startMS },
-        endMS: { $lte: endMS}
+        endMS: { $lte: endMS},
       },
     },
     { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$totalPacketSize' } } },
