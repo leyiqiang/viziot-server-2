@@ -1,5 +1,4 @@
 
-const todoApi = require('../api/todo/index')
 const tcpDataApi = require('../api/tcpData/index')
 const deviceApi = require('../api/device/index')
 
@@ -10,7 +9,6 @@ module.exports = app => {
     res.json({ version: 1 })
   })
 
-  app.use(API_V1, todoApi)
   app.use(API_V1, tcpDataApi)
   app.use(API_V1, deviceApi)
 }
