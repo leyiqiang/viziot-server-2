@@ -5,6 +5,8 @@
 const defaultConfig = {
   apiPort: process.env.PORT || 3000,
   db: process.env['MONGO_URI'],
+  redisPort: process.env['REDIS_PORT'],
+  redisHost: process.env['REDIS_HOST'],
 }
 
 /**

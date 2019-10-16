@@ -4,6 +4,7 @@ const { TcpDataModel } = require('./tcpData.model')
 const { TcpAggregatedDataModel } = require('./tcpAggregatedData.model')
 const { DeviceModel } = require('../device/device.model')
 const { getStartOfToday, getNow } = require('../../util/time')
+const redisClient = require('../../redis')
 
 module.exports = {
   getRecentDataWithinNSeconds,
@@ -69,6 +70,37 @@ function mapMacAddressToDeviceName(macSizeMap, deviceMap) {
     results.push(data)
   })
   return results
+}
+
+function aggregateRedisData(listObjects) {
+  const groupedData = {}
+  let groupedDataList = []
+  _.forEach(listObjects, function(o) {
+    const srcMac = o['src_mac']
+    const dstMac = o['dst_mac']
+    const totalPacketSize = o['totalPacketSize']
+    const key = [srcMac, dstMac]
+    if(_.isNil(groupedData[key])) {
+      groupedData[key] = totalPacketSize
+    } else {
+      groupedData[key] += totalPacketSize
+    }
+
+    for(let key in groupedData) {
+      const macAddrs = _.split(key, ',')
+      const srcMac = macAddrs[0]
+      const dstMac = macAddrs[1]
+      const totalPacketSize = groupedData[key]
+      groupedDataList.push({
+        '_id': {
+          'src_mac': srcMac,
+          'dst_mac': dstMac,
+        },
+        'size': totalPacketSize,
+      })
+    }
+  })
+  return groupedDataList
 }
 
 async function getRecentDataWithinNSeconds(pastMS) {
@@ -201,6 +233,16 @@ async function getAggregateCountDataByTime(startMS, endMS) {
 
 
 async function getAggregateSizeDataByTime(startMS, endMS) {
+  //        data = self.redis.zrangebyscore('packets', cur_time_in_ms - time_before * 1000, cur_time_in_ms)
+  // todo add promise
+  let resultsFromRedisData = []
+  redisClient.zrangebyscore('packets', startMS, endMS, function(err, result) {
+    const results = _.map(result, (o) =>{
+      return JSON.parse(o)
+    })
+
+    resultsFromRedisData = results
+  })
 
   const resultsFromTcpData = await TcpDataModel.aggregate([
     {
@@ -223,6 +265,14 @@ async function getAggregateSizeDataByTime(startMS, endMS) {
 
   let size = 0
 
+  if (resultsFromRedisData.length > 0) {
+    // console.log('resultsFromTcpData: ' + resultsFromTcpData[0].size)
+    _.forEach(resultsFromRedisData, function(r) {
+      size += r['totalPacketSize']
+      // console.log(size)
+    })
+  }
+
   if (resultsFromTcpData.length > 0) {
     // console.log('resultsFromTcpData: ' + resultsFromTcpData[0].size)
     size += resultsFromTcpData[0].size
@@ -237,8 +287,17 @@ async function getAggregateSizeDataByTime(startMS, endMS) {
 }
 
 
-
 async function getAggregateMacAddressSizeDataByTime(startMS, endMS) {
+  //        data = self.redis.zrangebyscore('packets', cur_time_in_ms - time_before * 1000, cur_time_in_ms)
+  // todo add promise
+  let resultsFromRedisData = []
+  redisClient.zrangebyscore('packets', startMS, endMS, function(err, result) {
+    const results = _.map(result, (o) =>{
+        return JSON.parse(o)
+    })
+
+    resultsFromRedisData = results
+  })
   const tcpDataPromise = TcpDataModel.aggregate([
     {
       $match: {
@@ -261,13 +320,15 @@ async function getAggregateMacAddressSizeDataByTime(startMS, endMS) {
   const devicesDataPromise = DeviceModel.find()
   // parallel promises
   const values = await Promise.all([tcpDataPromise, aggregateDataPromise, devicesDataPromise])
-
-  const resultsFromTcpData = values[0]
+  const aggregatedRedistData = aggregateRedisData(resultsFromRedisData)
+  // const resultsFromTcpData = values[0]
   const resultsFromAggregatedData = values[1]
+  // console.log(aggregatedRedistData)
   const devices = values[2]
   const deviceMap = convertDeviceListToMap(devices)
 
-  const combinedArray = resultsFromTcpData.concat(resultsFromAggregatedData)
+  // const combinedArray = resultsFromTcpData.concat(resultsFromAggregatedData)
+  const combinedArray = aggregatedRedistData.concat(resultsFromAggregatedData)
   const resultMap = buildSizeMacAddressData(combinedArray)
   const results = mapMacAddressToDeviceName(resultMap, deviceMap)
 

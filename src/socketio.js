@@ -19,7 +19,7 @@ function initSocketIO(http) {
     .of('/chat')
 
   chat.on('connection', function (socket) {
-    // console.log('a cat user connected');
+    console.log('a cat user connected');
     socket.on('/chat/message', function(data) {
       // chat.emit('/chat/message', data)
       // socket.broadcast.emit('/chat/message', data);

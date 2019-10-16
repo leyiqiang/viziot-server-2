@@ -6,6 +6,8 @@ const config = require('./config/config')
 const expressConfig = require('./config/express')
 const routesConfig = require('./config/routes')
 
+const redisClient = require('./redis')
+
 class Server {
   constructor() {
     this.app = express()
@@ -21,6 +23,15 @@ class Server {
 
     // express settings
     expressConfig(this.app)
+
+    // connect to redis database
+    redisClient.on('connect', function() {
+      console.log('Redis client connected')
+    })
+
+    redisClient.on('error', function (err) {
+      console.log('Something went wrong ' + err)
+    })
 
     // connect to database
     mongoose.connect(this.config.db, { useNewUrlParser: true })
