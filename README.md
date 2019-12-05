@@ -3,7 +3,8 @@ ViZIot server version 2
 
 A new server to serve for tcpdata monitor by IoT router
 
-Server Address: https://viziot-server-2.herokuapp.com
+This project is modified based on Chenxi’s viziot-server-2(https://github.com/VizIoT/viziot-server-2)
+
 
 ## Set Up Guide
 Copy `.env.example` to `.env`, and put the MongoDB connection string to here.
@@ -11,6 +12,7 @@ Copy `.env.example` to `.env`, and put the MongoDB connection string to here.
 MONGO_URI=<MONGO_URI>
 ```
 Run command `yarn install` to install dependencies.
+put the frontend built `dist/` folder into the root folder.
 
 To run the server:
 ```bash
