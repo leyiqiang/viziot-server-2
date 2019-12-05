@@ -12,7 +12,7 @@ Copy `.env.example` to `.env`, and put the MongoDB connection string to here.
 MONGO_URI=<MONGO_URI>
 ```
 Run command `yarn install` to install dependencies.
-put the frontend built `dist/` folder into the root folder.
+put the frontend built `dist/` folder into the root directory of the project.
 
 To run the server:
 ```bash
