@@ -70,7 +70,7 @@ function initSocketIO(http) {
   }, interval)
 
  setInterval(async () => {
-    const result = await TcpDataDa.getTotalSizeFromStartOfTheDay(interval)
+    const result = await TcpDataDa.getTotalSize(interval)
     // console.log(result)
     chat.emit('/total/size', result);
   }, interval)

@@ -2,12 +2,12 @@ const _ = require('lodash')
 const { standardize } = require('mac-address-util')
 const { TcpDataModel } = require('./tcpData.model')
 const { TcpAggregatedDataModel } = require('./tcpAggregatedData.model')
-const { DeviceModel } = require('../device/device.model')
 const { getStartOfToday, getNow } = require('../../util/time')
 const redisClient = require('../../redis')
 
 module.exports = {
   getRecentDataWithinNSeconds,
+  getTotalSize,
   getTotalCountFromStartOfTheDay,
   getTotalSizeFromStartOfTheDay,
   getTotalCountOfRecentDataWithinNSeconds,
@@ -181,6 +181,17 @@ async function getTotalCountFromStartOfTheDay() {
   }
 }
 
+async function getTotalSize() {
+  let size
+  redisClient.get('total_packet_size', function(err, result) {
+    size = result
+  })
+  return {
+    size,
+  }
+
+}
+
 
 async function getTotalSizeFromStartOfTheDay() {
   const startMS = getStartOfToday()
@@ -292,39 +303,44 @@ async function getAggregateMacAddressSizeDataByTime(startMS, endMS) {
   // todo add promise
   let resultsFromRedisData = []
   redisClient.zrangebyscore('packets', startMS, endMS, function(err, result) {
-    const results = _.map(result, (o) =>{
+    resultsFromRedisData = _.map(result, (o) =>{
         return JSON.parse(o)
     })
 
-    resultsFromRedisData = results
   })
-  const tcpDataPromise = TcpDataModel.aggregate([
-    {
-      $match: {
-        timestamp: { $gte: startMS, $lte: endMS },
-      },
-    },
-    { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$packet_size' } } },
-  ])
+  let devices
+  redisClient.lrange('device_list', 0, -1, function(err, result) {
+    devices = result
+  })
+  // const tcpDataPromise = TcpDataModel.aggregate([
+  //   {
+  //     $match: {
+  //       timestamp: { $gte: startMS, $lte: endMS },
+  //     },
+  //   },
+  //   { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$packet_size' } } },
+  // ])
 
-  const aggregateDataPromise = TcpAggregatedDataModel.aggregate([
-    {
-      $match: {
-        startMS: { $gte: startMS },
-        endMS: { $lte: endMS},
-      },
-    },
-    { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$totalPacketSize' } } },
-  ])
+  // const aggregateDataPromise = TcpAggregatedDataModel.aggregate([
+  //   {
+  //     $match: {
+  //       startMS: { $gte: startMS },
+  //       endMS: { $lte: endMS},
+  //     },
+  //   },
+  //   { $group: { _id: { src_mac: '$src_mac', dst_mac: '$dst_mac' }, size: { $sum: '$totalPacketSize' } } },
+  // ])
 
-  const devicesDataPromise = DeviceModel.find()
+  // const devicesDataPromise = DeviceModel.find()
   // parallel promises
-  const values = await Promise.all([tcpDataPromise, aggregateDataPromise, devicesDataPromise])
+  // const values = await Promise.all([tcpDataPromise, aggregateDataPromise, devicesDataPromise])
+  // const values = await Promise.all([devicesDataPromise])
+
   const aggregatedRedistData = aggregateRedisData(resultsFromRedisData)
   // const resultsFromTcpData = values[0]
-  const resultsFromAggregatedData = values[1]
+  const resultsFromAggregatedData = aggregatedRedistData
   // console.log(aggregatedRedistData)
-  const devices = values[2]
+  // const devices = values[0]
   const deviceMap = convertDeviceListToMap(devices)
 
   // const combinedArray = resultsFromTcpData.concat(resultsFromAggregatedData)

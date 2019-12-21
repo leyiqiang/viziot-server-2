@@ -32,25 +32,33 @@ class Server {
     redisClient.on('error', function (err) {
       console.log('Something went wrong ' + err)
     })
+    // initialize api
+    routesConfig(this.app)
+    const { initSocketIO } = require('./socketio')
+    initSocketIO(this.http)
 
+    // start server
+    this.http.listen(this.config.apiPort, () => {
+      console.log(`[Server] listening on port ${this.config.apiPort}`)
+    })
     // connect to database
-    mongoose.connect(this.config.db, { useNewUrlParser: true })
-      .then(() => {
-        console.log(`[MongoDB] connected: ${this.config.db}`)
-
-        // initialize api
-        routesConfig(this.app)
-        const { initSocketIO } = require('./socketio')
-        initSocketIO(this.http)
-
-        // start server
-        this.http.listen(this.config.apiPort, () => {
-          console.log(`[Server] listening on port ${this.config.apiPort}`)
-        })
-      })
-      .catch(err => {
-        console.log(`[MongoDB] Failed to connect. ${err}`)
-      })
+    // mongoose.connect(this.config.db, { useNewUrlParser: true })
+    //   .then(() => {
+    //     console.log(`[MongoDB] connected: ${this.config.db}`)
+    //
+    //     // initialize api
+    //     routesConfig(this.app)
+    //     const { initSocketIO } = require('./socketio')
+    //     initSocketIO(this.http)
+    //
+    //     // start server
+    //     this.http.listen(this.config.apiPort, () => {
+    //       console.log(`[Server] listening on port ${this.config.apiPort}`)
+    //     })
+    //   })
+    //   .catch(err => {
+    //     console.log(`[MongoDB] Failed to connect. ${err}`)
+    //   })
   }
 }
 
